@@ -25,9 +25,13 @@
       overflow: hidden; /* Mencegah scroll ganda */
     }
 
+    /* Penuhkan SELURUH skrin (termasuk bawah "home indicator" iPhone).
+       100dvh di mod Home Screen iPhone berhenti sebelum bahagian bawah → kandungan app nampak "bocor". */
     .iframe-container {
+      position: fixed;
+      top: 0; right: 0; bottom: 0; left: 0;
       width: 100%;
-      height: 100dvh; /* Menggunakan dvh agar pas di mobile browser */
+      height: 100%;
       overflow: hidden;
     }
 
