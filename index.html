@@ -1,17 +1,27 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="ms">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <title>Maqna Attendance System</title>
   <link rel="icon" href="https://i.postimg.cc/c45dXrf8/Maqna-Profile.png" />
+
+  <!-- Rasa macam app bila "Add to Home Screen" (iPhone & Android) -->
+  <meta name="theme-color" content="#0b0c0e" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="MAQNA" />
+  <link rel="apple-touch-icon" href="https://i.postimg.cc/c45dXrf8/Maqna-Profile.png" />
+  <link rel="manifest" href="manifest.webmanifest" />
+
   <style>
     html, body {
       margin: 0;
       padding: 0;
       width: 100%;
       height: 100%;
-      background-color: #eee;
+      background-color: #0b0c0e; /* sama dengan tema app — tiada kilat putih semasa loading */
       overflow: hidden; /* Mencegah scroll ganda */
     }
 
@@ -41,5 +51,33 @@
       allow="fullscreen; camera; microphone; display-capture; geolocation;">
     </iframe>
   </div>
+
+  <!--
+    MAQNA Attendance — simpanan sesi "Ingat saya" (30 hari)
+    App berjalan dalam iframe domain Google. iPhone (Safari / app Home Screen) dan Chrome yang
+    sekat third-party cookies tidak benarkan iframe menyimpan data, jadi login hilang bila app ditutup.
+    Skrip ini simpan token sesi pada halaman GitHub ini sendiri (storan yang kekal).
+    Hanya menerima mesej daripada app Apps Script (…-script.googleusercontent.com).
+  -->
+  <script>
+  (function () {
+    var PREFIX = 'maqna_att_';
+    var FROM = /^https:\/\/[a-z0-9-]+-script\.googleusercontent\.com$/;
+    window.addEventListener('message', function (e) {
+      var d = e.data;
+      if (!FROM.test(e.origin) || !d || d.app !== 'maqna-att' || !e.source) return;
+      if (['get', 'set', 'del'].indexOf(d.op) < 0 || !/^[a-z_]{1,20}$/.test(String(d.key))) return;
+      var out = { app: 'maqna-att', id: d.id };
+      try {
+        if (d.op === 'get') out.value = localStorage.getItem(PREFIX + d.key);
+        else if (d.op === 'set') localStorage.setItem(PREFIX + d.key, String(d.value).slice(0, 4000));
+        else localStorage.removeItem(PREFIX + d.key);
+      } catch (err) { out.error = String(err); }
+      e.source.postMessage(out, e.origin);
+    });
+    // minta pelayar jangan padam storan halaman ini (Android / desktop)
+    try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (err) { }
+  })();
+  </script>
 </body>
 </html>
