@@ -57,6 +57,33 @@
   </div>
 
   <!--
+    Penuh skrin di app Home Screen iPhone.
+    Pepijat iOS 26.1: dalam mod Home Screen, tinggi halaman dikira terlalu pendek (lebih kurang tinggi
+    bar status), jadi ada ruang kosong di bawah. Skrip ini ukur tinggi skrin sebenar dan besarkan iframe.
+    Jika iOS sudah betul (26.2+), tinggi sama dan skrip tidak mengubah apa-apa.
+  -->
+  <script>
+  (function () {
+    var box = document.querySelector('.iframe-container');
+    var ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    var standalone = window.navigator.standalone === true ||
+      (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+    function fit() {
+      if (!box || !ios || !standalone) return;
+      var vh = window.innerHeight, vw = window.innerWidth;
+      var full = vh >= vw ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height);
+      var gap = full - vh;
+      if (gap > 0 && gap < 140) { box.style.bottom = 'auto'; box.style.height = full + 'px'; }
+      else { box.style.bottom = ''; box.style.height = ''; }
+    }
+    fit();
+    window.addEventListener('resize', fit);
+    window.addEventListener('orientationchange', function () { setTimeout(fit, 350); });
+    window.addEventListener('pageshow', fit);
+  })();
+  </script>
+
+  <!--
     MAQNA Attendance — simpanan sesi "Ingat saya" (30 hari)
     App berjalan dalam iframe domain Google. iPhone (Safari / app Home Screen) dan Chrome yang
     sekat third-party cookies tidak benarkan iframe menyimpan data, jadi login hilang bila app ditutup.
