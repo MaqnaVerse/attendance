@@ -1,0 +1,29 @@
+<!--
+  MAQNA Attendance — simpanan sesi "Ingat saya" (30 hari)
+  Tampal SEBELUM </body> dalam index.html GitHub Pages (halaman yang ada <iframe> Apps Script).
+
+  Kenapa: app berjalan dalam iframe domain Google. iPhone (Safari / app Home Screen) dan Chrome yang
+  sekat third-party cookies tidak benarkan iframe menyimpan data, jadi login hilang bila app ditutup.
+  Skrip ini simpan token sesi pada halaman GitHub ini sendiri (storan yang kekal).
+  Hanya menerima mesej daripada app Apps Script (…-script.googleusercontent.com).
+-->
+<script>
+(function () {
+  var PREFIX = 'maqna_att_';
+  var FROM = /^https:\/\/[a-z0-9-]+-script\.googleusercontent\.com$/;
+  window.addEventListener('message', function (e) {
+    var d = e.data;
+    if (!FROM.test(e.origin) || !d || d.app !== 'maqna-att' || !e.source) return;
+    if (['get', 'set', 'del'].indexOf(d.op) < 0 || !/^[a-z_]{1,20}$/.test(String(d.key))) return;
+    var out = { app: 'maqna-att', id: d.id };
+    try {
+      if (d.op === 'get') out.value = localStorage.getItem(PREFIX + d.key);
+      else if (d.op === 'set') localStorage.setItem(PREFIX + d.key, String(d.value).slice(0, 4000));
+      else localStorage.removeItem(PREFIX + d.key);
+    } catch (err) { out.error = String(err); }
+    e.source.postMessage(out, e.origin);
+  });
+  // minta pelayar jangan padam storan halaman ini (Android / desktop)
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (err) { }
+})();
+</script>
